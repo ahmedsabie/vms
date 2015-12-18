@@ -1,0 +1,147 @@
+{% extends "administrator/settings.html" %}
+
+{% block setting_content %}
+<br>
+{% if messages %}
+
+<div class="alert alert-dismissible alert-danger">
+  <button type="button" class="close" data-dismiss="alert"></button>
+  <ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+</div>
+
+{% endif %}
+
+
+    <div class="spacer"></div>
+    {% if event_list %}
+        <div class="well">
+            <form class="form-horizontal" action="{% url 'job:create' %}" method="post">
+                {% csrf_token %}
+                <fieldset>
+                    <legend>Create Job</legend>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">
+                            Event:
+                        </label>
+                        <div class="col-md-8">
+                            <select class="form-control" name="event_id" id="id" onchange="dates()">
+                                {% for event in event_list %}
+                                    <option value="{{ event.id }}" event="{{ event }}">{{ event.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <p id="d"></p>
+                    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery-1.8.3.min.js">
+                       function dates(){
+                            var event_id=document.getElementById("id");
+                            event=event_id.getAttribute("event");
+                            document.getElementById("d").innerHTML="Event starts by {{ event.start_date }} and ends by {{ event.end_date }}";
+                    </script>
+
+                    {% if form.name.errors %}
+                        <div class="form-group has-error">
+                            <label class="col-md-2 control-label">Job Name</label>
+                            <div class="col-md-8">
+                                <input class="form-control" placeholder="Job Name" type="text" name="name" value="{% if form.name.value %}{{ form.name.value }}{% endif %}">
+                                <p class="help-block">
+                                    <strong>
+                                        {% for error in form.name.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </strong>
+                                </p>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">Job Name</label>
+                            <div class="col-md-8">
+                                <input class="form-control" placeholder="Job Name" type="text" name="name" value="{% if form.name.value %}{{ form.name.value }}{% endif %}">
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if form.description.errors %}
+                        <div class="form-group has-error">
+                            <label class="col-md-2 control-label">Description</label>
+                            <div class="col-md-8">
+                                <textarea class="form-control" type="text" rows="4" placeholder="Include a description of the job here" name="description">{% if form.description.value %}{{ form.description.value }}{% endif %}</textarea>
+                                <p class="help-block">
+                                    <strong>
+                                        {% for error in form.description.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </strong>
+                                </p>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">Description</label>
+                            <div class="col-md-8">
+                                <textarea class="form-control" type="text" rows="4" placeholder="Include a description of the job here" name="description">{% if form.description.value %}{{ form.description.value }}{% endif %}</textarea>
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if form.start_date.errors %}
+                        <div class="form-group has-error">
+                            <label class="col-md-2 control-label">Start Date</label>
+                            <div class="col-md-8">
+                                <input class="form-control" type="text" name="start_date" id="from" name="from" value="{% if form.start_date.value %}{{ form.start_date.value }}{% endif %}">
+                                <p class="help-block">
+                                    <strong>
+                                        {% for error in form.start_date.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </strong>
+                                </p>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">Start Date</label>
+                            <div class="col-md-8">
+                                <input class="form-control" type="text" name="start_date" id="from" name="from" value="{% if form.start_date.value %}{{ form.start_date.value }}{% endif %}">
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if form.end_date.errors %}
+                        <div class="form-group has-error">
+                            <label class="col-md-2 control-label">End Date</label>
+                            <div class="col-md-8">
+                                <input class="form-control" type="text" name="end_date" id="to" name="to" value="{% if form.end_date.value %}{{ form.end_date.value }}{% endif %}">
+                                <p class="help-block">
+                                    <strong>
+                                        {% for error in form.end_date.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </strong>
+                                </p>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">End Date</label>
+                            <div class="col-md-8">
+                                <input class="form-control" type="text" name="end_date" id="to" name="to" value="{% if form.end_date.value %}{{ form.end_date.value }}{% endif %}">
+                            </div>
+                        </div>
+                    {% endif %}
+                    <div class="form-group">
+                        <div class="col-md-12 col-md-offset-2">
+                            <button class="btn btn-primary" type="submit">Create</button>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+    {% else %}
+        <div class="alert alert-success">
+            Please add events to associate with jobs first.
+        </div>
+    {% endif %}
+{% endblock %}
