@@ -1,7 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 
 from job.models import Job
-
+from shift.services import get_shifts_by_job_id
 
 def job_not_empty(job_id):
     """ Check if the job exists and is not empty """
@@ -52,3 +52,13 @@ def get_jobs_by_event_id(e_id):
 def get_jobs_ordered_by_title():
     job_list = Job.objects.all().order_by('name')
     return job_list
+
+
+def remove_empty_jobs(job_list):
+    """ Removes all jobs from a job list without shifts """
+    new_job_list = []
+    for job in job_list:
+        shift_list = get_shifts_by_job_id(job.id)
+        if shift_list:
+            new_job_list.append(job)
+    return new_job_list
