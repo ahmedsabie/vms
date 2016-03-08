@@ -3,7 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-
+from datetime import date
 from job.services import *
 from shift.forms import HoursForm, ShiftForm
 from shift.models import Shift
@@ -337,16 +337,28 @@ def edit(request, shift_id):
                     shift_to_edit.job = job
                 else:
                     raise Http404
-                shift_to_edit.save()
 		
 		start_date_job=job.start_date
 		end_date_job=job.end_date
                 shift_date=form.cleaned_data['date']
+
+		shift_start_time=form.cleaned_data['start_time']
+		shift_end_time=form.cleaned_data['end_time']
 		if( shift_date >= start_date_job and shift_date <= end_date_job ):
+			if(shift_end_time>shift_start_time):
                             shift = form.save(commit=False)
                             shift.job = job
                             shift.save()
-                            return HttpResponseRedirect(reverse('shift:list_shifts', args=(shift_id,)))
+                            return HttpResponseRedirect(reverse('shift:list_shifts', args=(shift.job.id,)))
+
+			else:
+			    messages.add_message(request, messages.INFO, 'Shift end time should be greater than start time')
+                            return render(
+                            request,
+                            'shift/edit.html',
+                            {'form': form, 'shift': shift, 'job': shift.job }
+                            )
+
                 else:
                             messages.add_message(request, messages.INFO, 'Shift date should lie within Job dates')
                             return render(
@@ -354,6 +366,8 @@ def edit(request, shift_id):
                             'shift/edit.html',
                             {'form': form, 'shift': shift, 'job': shift.job}
                             )
+
+		shift_to_edit.save()
                 return HttpResponseRedirect(reverse(
                     'shift:list_shifts',
                     args=(shift.job.id, )
@@ -536,7 +550,13 @@ def list_shifts_sign_up(request, job_id, volunteer_id):
     if job_id:
         job = get_job_by_id(job_id)
         if job:
-            shift_list = get_shifts_with_open_slots_for_volunteer(job_id, volunteer_id)
+            shift_list = []
+            shift_list_all = get_shifts_with_open_slots_for_volunteer(job_id, volunteer_id)
+            for shift in shift_list_all:
+                sdate = shift["date"]
+                today = date.today()
+                if sdate >= today:
+                    shift_list.append(shift)
             return render(
                 request,
                 'shift/list_shifts_sign_up.html',
